@@ -11,37 +11,51 @@ library(plyr)
 library(ggbiplot)
 
 options(scipen = 999)
-"---------------------------------------------------"
 
 data <- read.csv("./Binance.csv", sep = ",")
 glimpse(data)
+row__names <- data[,2]
+rownames(data) <- row__names
 
-data_transform <- data %>% 
+data <- data %>% 
   mutate(
-    symbol = NULL
-  )
-glimpse(data_transform)
+    symbol = NULL,
+    X = NULL,
+    count = as.double(count)
+  ) 
 
-pca_data <- prcomp(data_transform, center = TRUE , scale = TRUE)
 
+
+
+View(data)
+
+pca_data <- prcomp(data, center = TRUE , scale = TRUE)
+
+names(pca_data)
 summary(pca_data)
 
 plot(pca_data$x[,1], pca_data$x[,2], xlab = "PCA 1", ylab = "PCA 2")
-
 autovectores <- pca_data$rotation 
 autovalores <- pca_data$sdev * pca_data$sdev
 
 pca_var_pct <- round(autovalores / sum(autovalores)*100, digits = 2)
 barplot(pca_var_pct, main = "Scree Plot", xlab = "Componente Principal", ylab = "Variacion Porcentual")
 
-round(cor(data_transform, pca_data$x), digits = 3)
+round(cor(data, pca_data$x), digits = 3)
 screeplot(pca_data, type = "l", main = "Screeplot binance")
 
+glimpse(pca_data)
+
 pca_binance <- data.frame(
-  Modelo = rownames(data_transform$x),
-  x = data_transform$x[, 1],
-  y = data_transform$x[, 2]
+  Modelo = rownames(pca_data$x),
+  x = pca_data$x[, 1],
+  y = pca_data$x[, 2]
 )
+
+View(mtcars)
+View(data)
+
+View(pca_binance)
 
 ggplot(data = pca_binance, aes(x, y, label = Modelo)) +
   geom_text() +
@@ -50,3 +64,6 @@ ggplot(data = pca_binance, aes(x, y, label = Modelo)) +
   theme_bw() +
   ggtitle("Gráfico PCA")
 
+pca_final <- principal(r = data,nfactors = 4,rotate = "none")
+
+pca_final
